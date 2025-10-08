@@ -470,6 +470,7 @@ button {
   word-break: break-word;
   max-width: calc(100vw - 20px);
   font-size: var(--tooltip-font-size, 12px);
+  font-family: var(--chatbot-container-font-family);
   transition: opacity 0.3s ease-in-out;
 }
 
