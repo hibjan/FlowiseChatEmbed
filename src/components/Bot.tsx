@@ -1,4 +1,5 @@
 import { createSignal, createEffect, For, onMount, Show, mergeProps, on, createMemo, onCleanup } from 'solid-js';
+import { Portal } from 'solid-js/web';
 import { v4 as uuidv4 } from 'uuid';
 import {
   sendMessageQuery,
@@ -486,6 +487,8 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
   const [isLeadSaved, setIsLeadSaved] = createSignal(false);
   const [leadEmail, setLeadEmail] = createSignal('');
   const [disclaimerPopupOpen, setDisclaimerPopupOpen] = createSignal(false);
+  const [isLightboxOpen, setIsLightboxOpen] = createSignal(false);
+  const [lightboxSrc, setLightboxSrc] = createSignal<string>('');
 
   const [openFeedbackDialog, setOpenFeedbackDialog] = createSignal(false);
   const [feedback, setFeedback] = createSignal('');
@@ -567,6 +570,46 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       chatContainer?.scrollTo(0, chatContainer.scrollHeight);
     }, 50);
   });
+
+  // Listen for global image open events from bubbles
+  onMount(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      if (typeof ce.detail === 'string') {
+        // eslint-disable-next-line no-console
+        console.debug('[Chat] opening image lightbox:', ce.detail);
+        openImageLightbox(ce.detail);
+      }
+    };
+    window.addEventListener('flowise:open-image', handler as EventListener);
+    onCleanup(() => {
+      window.removeEventListener('flowise:open-image', handler as EventListener);
+    });
+  });
+
+  // Manage body scroll and Esc key when lightbox is open
+  createEffect(() => {
+    if (isLightboxOpen()) {
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setIsLightboxOpen(false);
+          setLightboxSrc('');
+        }
+      };
+      document.addEventListener('keydown', onKeyDown);
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      onCleanup(() => {
+        document.removeEventListener('keydown', onKeyDown);
+        document.body.style.overflow = originalOverflow;
+      });
+    }
+  });
+
+  const openImageLightbox = (src: string) => {
+    setLightboxSrc(src);
+    setIsLightboxOpen(true);
+  };
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -2661,6 +2704,62 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
           setFeedbackValue={(value) => setFeedback(value)}
         />
       )}
+
+      {/* Image Lightbox Overlay */}
+      <Portal>
+        <Show when={isLightboxOpen()}>
+          <div
+            class="flowise-image-lightbox"
+            style={{
+              position: 'fixed',
+              inset: '0px',
+              'z-index': 42424250 as unknown as string,
+              display: 'flex',
+              'align-items': 'center',
+              'justify-content': 'center',
+              background: 'rgba(0, 0, 0, 0.8)',
+            }}
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsLightboxOpen(false);
+                setLightboxSrc('');
+              }
+            }}
+          >
+            <button
+              type="button"
+              class="flowise-image-lightbox-close"
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                color: '#fff',
+                'font-size': '24px',
+                'line-height': '1',
+                'background-color': 'transparent',
+              }}
+              aria-label="Close image"
+              onClick={() => {
+                setIsLightboxOpen(false);
+                setLightboxSrc('');
+              }}
+            >
+              ×
+            </button>
+            <img
+              src={lightboxSrc()}
+              style={{
+                'max-width': '95vw',
+                'max-height': '95vh',
+                'object-fit': 'contain',
+                'box-shadow': '0 10px 25px rgba(0,0,0,0.5)',
+              }}
+            />
+          </div>
+        </Show>
+      </Portal>
     </>
   );
 };

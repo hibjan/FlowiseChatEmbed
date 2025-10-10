@@ -53,6 +53,16 @@ export const GuestBubble = (props: Props) => {
       el.querySelectorAll('a').forEach((link) => {
         link.target = '_blank';
       });
+
+      // Enable lightbox for inline images inside markdown content
+      el.querySelectorAll('img').forEach((img) => {
+        (img as HTMLImageElement).style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+          const src = (img as HTMLImageElement).src;
+          const event = new CustomEvent('flowise:open-image', { detail: src });
+          window.dispatchEvent(event);
+        });
+      });
     }
   };
 
@@ -62,7 +72,16 @@ export const GuestBubble = (props: Props) => {
       const src = (item.data as string) ?? fileData;
       return (
         <div class="flex items-center justify-center max-w-[128px] mr-[10px] p-0 m-0">
-          <img class="w-full h-full bg-cover" src={src} />
+          <button
+            type="button"
+            class="w-full h-full cursor-zoom-in"
+            onClick={() => {
+              const event = new CustomEvent('flowise:open-image', { detail: src });
+              window.dispatchEvent(event);
+            }}
+          >
+            <img class="w-full h-full bg-cover" src={src} alt={item.name || 'Image'} />
+          </button>
         </div>
       );
     } else if (item?.mime?.startsWith('audio/')) {

@@ -53,7 +53,16 @@ export const AgentReasoningBubble = (props: Props) => {
       const src = item.data as string;
       return (
         <div class="flex items-center justify-center max-w-[128px] mr-[10px] p-0 m-0">
-          <img class="w-full h-full bg-cover" src={src} />
+          <button
+            type="button"
+            class="w-full h-full cursor-zoom-in"
+            onClick={() => {
+              const event = new CustomEvent('flowise:open-image', { detail: src });
+              window.dispatchEvent(event);
+            }}
+          >
+            <img class="w-full h-full bg-cover" src={src} alt={item.name || 'Image'} />
+          </button>
         </div>
       );
     } else if (item.type === 'html') {

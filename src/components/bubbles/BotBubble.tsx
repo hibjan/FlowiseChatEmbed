@@ -93,6 +93,16 @@ export const BotBubble = (props: Props) => {
       // Store the element ref for the copy function
       setBotMessageElement(el);
 
+      // Enable lightbox for inline images inside markdown content
+      el.querySelectorAll('img').forEach((img) => {
+        (img as HTMLImageElement).style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+          const src = (img as HTMLImageElement).src;
+          const event = new CustomEvent('flowise:open-image', { detail: src });
+          window.dispatchEvent(event);
+        });
+      });
+
       if (props.message.rating) {
         setRating(props.message.rating);
         if (props.message.rating === 'THUMBS_UP') {
@@ -317,17 +327,35 @@ export const BotBubble = (props: Props) => {
       <>
         <Show when={item.type === 'png' || item.type === 'jpeg'}>
           <div class="flex items-center justify-center p-0 m-0">
-            <img
-              class="w-full h-full bg-cover"
-              src={(() => {
-                const isFileStorage = typeof item.data === 'string' && item.data.startsWith('FILE-STORAGE::');
-                return isFileStorage
-                  ? `${props.apiHost}/api/v1/get-upload-file?chatflowId=${props.chatflowid}&chatId=${props.chatId}&fileName=${(
-                      item.data as string
-                    ).replace('FILE-STORAGE::', '')}`
-                  : (item.data as string);
-              })()}
-            />
+            <button
+              type="button"
+              class="w-full h-full cursor-zoom-in"
+              onClick={() => {
+                const src = (() => {
+                  const isFileStorage = typeof item.data === 'string' && item.data.startsWith('FILE-STORAGE::');
+                  return isFileStorage
+                    ? `${props.apiHost}/api/v1/get-upload-file?chatflowId=${props.chatflowid}&chatId=${props.chatId}&fileName=${(
+                        item.data as string
+                      ).replace('FILE-STORAGE::', '')}`
+                    : (item.data as string);
+                })();
+                const event = new CustomEvent('flowise:open-image', { detail: src });
+                window.dispatchEvent(event);
+              }}
+            >
+              <img
+                class="w-full h-full bg-cover"
+                src={(() => {
+                  const isFileStorage = typeof item.data === 'string' && item.data.startsWith('FILE-STORAGE::');
+                  return isFileStorage
+                    ? `${props.apiHost}/api/v1/get-upload-file?chatflowId=${props.chatflowid}&chatId=${props.chatId}&fileName=${(
+                        item.data as string
+                      ).replace('FILE-STORAGE::', '')}`
+                    : (item.data as string);
+                })()}
+                alt={item.name || 'Image'}
+              />
+            </button>
           </div>
         </Show>
         <Show when={item.type === 'html'}>
