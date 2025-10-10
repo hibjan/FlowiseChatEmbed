@@ -6,32 +6,30 @@
   is generated when starting the server.
 -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Flowise Chatbot Widget</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="root"></div>
     <script type="module">
-        import Chatbot from './web.js'
-        
-        // Example initialization:
-        // If your .env contains:
-        // agent1=xyz789-uvw456,https://example.com
-        // support=abc123-def456,https://example.com
-        // salesbot=ghi123-jkl456,https://example.com
-        //
-        // Then use the environment variable name as chatflowid:
-        Chatbot.init({
-            chatflowid: 'agent1',    // or 'support', 'salesbot', etc.
-            apiHost: window.location.origin
-        })
-    </script>
-</body>
+      import Chatbot from './web.js';
 
+      // Example initialization:
+      // If your .env contains:
+      // agent1=xyz789-uvw456,https://example.com
+      // support=abc123-def456,https://example.com
+      // salesbot=ghi123-jkl456,https://example.com
+      //
+      // Then use the environment variable name as chatflowid:
+      Chatbot.init({
+        chatflowid: '2f144844-29c8-447e-82ca-4975107e0075', // or 'support', 'salesbot', etc.
+        apiHost: 'http://localhost:3000',
+      });
+    </script>
+  </body>
 </html>
